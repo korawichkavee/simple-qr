@@ -3,6 +3,7 @@
 Generate QR codes locally in your browser. No tracking. No server. 100% client-side. I am so sick of searching for a simple QR code generator but all of them either have to many ads or just require signing up. 
 
 Link1: [https://korawichkavee.github.io/simple-qr]
+
 Link2: [qr.korawichmawinkavee.com]
 
 ## Features
