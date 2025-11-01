@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple QR — Free & Donation‑Supported</title>
+  <meta name="description" content="Generate QR codes locally in your browser. No tracking. Free forever. Donate if it's useful." />
+  <style>
+    :root {
+      --bg: #0b1020; /* deep navy */
+      --fg: #e8eefc; /* near‑white */
+      --muted: #9bb0d3; /* soft blue */
+      --accent: #5b8cff; /* primary */
+      --card: #121a30; /* card bg */
+      --good: #3ddc97;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 10% -10%, #12203a, transparent), var(--bg);
+      color: var(--fg);
+      display: grid; place-items: center; padding: 24px;
+    }
+    .wrap { width: 100%; max-width: 980px; display: grid; gap: 16px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    h1 { margin: 0; font-size: clamp(1.1rem, 1.4rem + 1vw, 2rem); letter-spacing: 0.3px; }
+    .tag { font-size: 12px; color: var(--muted); }
+    .grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: linear-gradient(180deg, #14203a88, #0f1830aa), var(--card); border: 1px solid #263358; border-radius: 16px; padding: 16px; box-shadow: 0 6px 30px #0006; }
+    label { display: block; font-weight: 600; margin: 10px 0 6px; }
+    input[type="text"], textarea, select, input[type="number"], input[type="color"] {
+      width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #2c3f6a; background: #0d152b; color: var(--fg); outline: none;
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button, .btn {
+      appearance: none; border: 1px solid #2b3f6a; background: #162447; color: var(--fg); padding: 10px 14px; border-radius: 12px; cursor: pointer; font-weight: 600;
+    }
+    button:hover, .btn:hover { filter: brightness(1.1); }
+    .btn-primary { background: linear-gradient(180deg, #6aa4ff, #3e78ff); color: #081226; border: 0; }
+    .btn-ghost { background: transparent; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .pill { display:inline-flex; align-items:center; gap:8px; background:#0e1a36; border:1px solid #23345e; padding:6px 10px; border-radius:999px; font-size:12px; color:var(--muted)}
+    .qr-wrap { display: grid; place-items: center; background: #0d152b; border: 1px dashed #2b3f6a; border-radius: 16px; min-height: 360px; }
+    .qr { background: white; padding: 14px; border-radius: 10px; }
+    footer { display: grid; gap: 8px; text-align: center; }
+    a { color: var(--accent); text-decoration: none; }
+    .donate-row { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px; }
+    .success { color: var(--good); font-weight: 600; }
+  </style>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#0b1020" />
+  <link rel="icon" href="/icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Simple QR</h1>
+        <div class="tag">Free & local QR code generator — privacy‑first. If this helps, consider a donation ♥</div>
+      </div>
+      <div class="pill">No server · No tracking · 100% client‑side</div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <label for="text">Text or URL</label>
+        <textarea id="text" placeholder="Paste any text or link…">https://example.com/</textarea>
+
+        <div class="row">
+          <div>
+            <label for="size">Size (px)</label>
+            <input id="size" type="number" min="128" max="2048" step="32" value="320" />
+          </div>
+          <div>
+            <label for="margin">Margin</label>
+            <input id="margin" type="number" min="0" max="16" step="1" value="2" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="ec">Error correction</label>
+            <select id="ec">
+              <option value="L">L (7%)</option>
+              <option value="M" selected>M (15%)</option>
+              <option value="Q">Q (25%)</option>
+              <option value="H">H (30%)</option>
+            </select>
+          </div>
+          <div>
+            <label>Colors</label>
+            <div class="row">
+              <div><input id="fg" type="color" value="#000000" title="Foreground"/></div>
+              <div><input id="bg" type="color" value="#ffffff" title="Background"/></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="btn-generate">Generate</button>
+          <button id="btn-download-png">Download PNG</button>
+          <button id="btn-copy">Copy image</button>
+          <a id="btn-share" class="btn btn-ghost" href="#">Share link</a>
+          <span class="muted" id="status"></span>
+        </div>
+      </section>
+
+      <section class="card qr-wrap">
+        <div id="qrcode" class="qr" aria-label="QR output" role="img"></div>
+      </section>
+    </div>
+
+    <footer>
+      <div class="donate-row">
+        <!-- Replace the hrefs with your actual links when you have them -->
+        <a class="btn" href="#" id="donate-stripe">Donate with Stripe</a>
+        <a class="btn" href="#" id="donate-paypal">PayPal</a>
+        <a class="btn" href="#" id="donate-kofi">Buy Me a Coffee</a>
+        <a class="btn" href="#" id="source-link">Source on GitHub</a>
+      </div>
+      <div class="muted">All processing happens in your browser. Nothing is uploaded.</div>
+    </footer>
+  </div>
+
+  <!-- Lightweight QR library (MIT). If you prefer, vendoring this file avoids any CDN dependency.) -->
+  <script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script>
+    const textEl = document.getElementById('text');
+    const sizeEl = document.getElementById('size');
+    const marginEl = document.getElementById('margin');
+    const ecEl = document.getElementById('ec');
+    const fgEl = document.getElementById('fg');
+    const bgEl = document.getElementById('bg');
+    const qrcodeEl = document.getElementById('qrcode');
+    const statusEl = document.getElementById('status');
+
+    // Keep a reference to the current canvas for download/copy
+    let lastCanvas = null;
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+    function ecToLib(val){
+      return { L: QRCode.CorrectLevel.L, M: QRCode.CorrectLevel.M, Q: QRCode.CorrectLevel.Q, H: QRCode.CorrectLevel.H }[val] || QRCode.CorrectLevel.M;
+    }
+
+    function generate(){
+      const text = (textEl.value || '').trim();
+      const size = clamp(parseInt(sizeEl.value || '320', 10), 128, 2048);
+      const margin = clamp(parseInt(marginEl.value || '2', 10), 0, 16);
+      const ec = ecToLib(ecEl.value);
+      const colorDark = fgEl.value || '#000000';
+      const colorLight = bgEl.value || '#ffffff';
+
+      if(!text){ status('Enter some text to encode'); return; }
+
+      // Reset container
+      qrcodeEl.innerHTML = '';
+      // Create QR
+      const qr = new QRCode(qrcodeEl, {
+        text, width: size, height: size, correctLevel: ec, colorDark, colorLight, margin
+      });
+
+      // Grab the canvas once the lib has rendered it
+      setTimeout(() => {
+        const canvas = qrcodeEl.querySelector('canvas');
+        lastCanvas = canvas || null;
+        status('Ready');
+      }, 0);
+    }
+
+    function status(msg){ statusEl.textContent = msg; if(msg && /ready/i.test(msg)) statusEl.classList.add('success'); else statusEl.classList.remove('success'); }
+
+    async function copyImage(){
+      if(!lastCanvas){ status('Generate a QR first'); return; }
+      try{
+        lastCanvas.toBlob(async (blob) => {
+          if(!blob) return status('Copy failed');
+          const item = new ClipboardItem({ [blob.type]: blob });
+          await navigator.clipboard.write([item]);
+          status('Copied to clipboard');
+        });
+      }catch(err){ status('Clipboard not available in this browser'); }
+    }
+
+    function downloadPNG(){
+      if(!lastCanvas){ status('Generate a QR first'); return; }
+      const a = document.createElement('a');
+      a.download = 'qr.png';
+      a.href = lastCanvas.toDataURL('image/png');
+      a.click();
+    }
+
+    function shareLink(){
+      const params = new URLSearchParams({
+        t: textEl.value.trim(), s: sizeEl.value, m: marginEl.value, e: ecEl.value, fg: fgEl.value, bg: bgEl.value
+      }).toString();
+      const url = `${location.origin}${location.pathname}?${params}`;
+      if(navigator.share){ navigator.share({ title: 'Simple QR', url }); }
+      else { navigator.clipboard.writeText(url); status('Share URL copied'); }
+    }
+
+    // Read settings from querystring so users can share presets
+    function initFromQuery(){
+      const q = new URLSearchParams(location.search);
+      const v = (k, def) => q.get(k) ?? def;
+      textEl.value = v('t', textEl.value);
+      sizeEl.value = v('s', sizeEl.value);
+      marginEl.value = v('m', marginEl.value);
+      ecEl.value = v('e', ecEl.value);
+      fgEl.value = v('fg', fgEl.value);
+      bgEl.value = v('bg', bgEl.value);
+    }
+
+    // Wire up UI
+    document.getElementById('btn-generate').addEventListener('click', generate);
+    document.getElementById('btn-download-png').addEventListener('click', downloadPNG);
+    document.getElementById('btn-copy').addEventListener('click', copyImage);
+    document.getElementById('btn-share').addEventListener('click', (e) => { e.preventDefault(); shareLink(); });
+
+    // Defaults
+    initFromQuery();
+    generate();
+
+    // Donation links placeholders
+    document.getElementById('donate-stripe').href = '#'; // Replace with your Stripe Payment Link
+    document.getElementById('donate-paypal').href = '#';  // Replace with your PayPal.me link
+    document.getElementById('donate-kofi').href = '#';    // Replace with your Ko-fi / BuyMeACoffee link
+    document.getElementById('source-link').href = '#';    // Replace with your GitHub repo URL
+  </script>
+  <script>
+    // Register Service Worker for PWA/offline
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {/* noop */});
+      });
+    }
+  </script>
+</body>
+</html>
