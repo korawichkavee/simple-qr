@@ -4,7 +4,7 @@ Generate QR codes locally in your browser. No tracking. No server. 100% client-s
 
 Link1: [https://korawichkavee.github.io/simple-qr]
 
-Link2: [qr.korawichmawinkavee.com]
+Link2: [[qr.korawichmawinkavee.com](https://qr.korawichmawinkavee.com/)]
 
 ## Features
 - Text/URL → QR with custom size, margin, colors
