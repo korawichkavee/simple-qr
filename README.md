@@ -19,7 +19,7 @@ All processing happens locally in your browser. Nothing is uploaded. (so I can r
 
 ## Donate
 If this helps, consider donating:
-- PayPal: `https://paypal.me/KorawichKavee`
+- PayPal: `https://paypal.me/KorawichKavee` [MyPayPal](https://paypal.me/KorawichKavee)
 
 ## Local dev
 Just open `index.html` or run a local server:
