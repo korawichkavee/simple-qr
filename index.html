@@ -139,8 +139,17 @@
     const qrcodeEl = document.getElementById('qrcode');
     const statusEl = document.getElementById('status');
 
+    // New logo controls
+    const logoSizeContainer = document.createElement('div');
+    // Attempt to query controls if present; otherwise skip gracefully
+    const logoFileEl = document.getElementById('logoFile');
+    const logoSizeEl = document.getElementById('logoSize');
+    const logoPadEl = document.getElementById('logoPad');
+    const logoRadiusEl = document.getElementById('logoRadius');
+
     // Keep a reference to the current canvas for download/copy
     let lastCanvas = null;
+    let logoImg = null; // Image object for overlay
 
     function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
 
@@ -222,6 +231,21 @@
     document.getElementById('btn-copy').addEventListener('click', copyImage);
     document.getElementById('btn-share').addEventListener('click', (e) => { e.preventDefault(); shareLink(); });
 
+    // Logo file handling (only if the controls exist)
+    if(logoFileEl){
+    logoFileEl.addEventListener('change', () => {
+    const file = logoFileEl.files && logoFileEl.files[0];
+    if(!file){ logoImg = null; return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+    const img = new Image();
+    img.onload = () => { logoImg = img; status('Logo loaded'); };
+    img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    });
+    }
+
     // Defaults
     initFromQuery();
     generate();
@@ -231,6 +255,34 @@
     document.getElementById('donate-paypal').href = 'https://www.paypal.com/paypalme/KorawichKavee';  // Replace with your PayPal.me link
     document.getElementById('donate-kofi').href = 'https://buymeacoffee.com/korawichkavee';    // Replace with your Ko-fi / BuyMeACoffee link
     document.getElementById('source-link').href = 'https://github.com/korawichkavee/simple-qr/tree/main';    // Replace with your GitHub repo URL
+    
+    // Helper to draw rounded rect background + centered logo
+    function drawLogoOnCanvas(canvas, img, opts){
+    const ctx = canvas.getContext('2d');
+    const size = Math.min(canvas.width, canvas.height);
+    const box = Math.max(16, Math.floor(size * (opts.percent || 0.2)));
+    if(box <= 0) return;
+    const x = Math.floor((canvas.width - box) / 2);
+    const y = Math.floor((canvas.height - box) / 2);
+    const pad = opts.pad || 6;
+    const radius = opts.radius || 8;
+    // backdrop rounded rect (white) to improve scannability
+    roundRect(ctx, x - pad, y - pad, box + pad*2, box + pad*2, radius);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    // draw logo inside
+    ctx.drawImage(img, x, y, box, box);
+    }
+    function roundRect(ctx, x, y, w, h, r){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr, y);
+    ctx.arcTo(x+w, y, x+w, y+h, rr);
+    ctx.arcTo(x+w, y+h, x, y+h, rr);
+    ctx.arcTo(x, y+h, x, y, rr);
+    ctx.arcTo(x, y, x+w, y, rr);
+    ctx.closePath();
+    }
   </script>
   <script>
     // Register Service Worker for PWA/offline
