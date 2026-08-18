@@ -25,6 +25,7 @@ All processing happens locally in your browser. Nothing is uploaded. (so I can r
 If this helps, consider donating:
 - PayPal: `https://paypal.me/KorawichKavee` [MyPayPal](https://paypal.me/KorawichKavee)
 - BuyMeCoffee: [https://buymeacoffee.com/korawichkavee]
+- Other merch and social media support https://www.korawichmawinkavee.com/merchadise-sponsorship 
 
 ## Local dev
 Just open `index.html` or run a local server:
